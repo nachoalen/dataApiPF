@@ -2,8 +2,9 @@ var fs = require('fs');
 var readline = require('readline');
 var {google} = require('googleapis');
 var OAuth2 = google.auth.OAuth2;
+const youtube = google.youtube('v3');
 
-var SCOPES = ['https://www.googleapis.com/auth/youtube.upload'];
+var SCOPES = ['https://www.googleapis.com/auth/youtube.force-ssl'];
 var TOKEN_PATH = './credentialsyoutube-nodejs-quickstart.json';
 
 // Carga las credenciales del cliente desde un archivo local.
@@ -12,7 +13,7 @@ fs.readFile('./client_secret.json', function processClientSecrets(err, content) 
     console.log('Error cargando el archivo de secret client: ' + err);
     return;
   }
-  authorize(JSON.parse(content), uploadVideo);
+  authorize(JSON.parse(content), downloadCaption);
 });
 
 function authorize(credentials, callback) {
@@ -69,7 +70,32 @@ function storeToken(token) {
   });
 }
 
-function uploadVideo(auth) {
+
+
+async function downloadCaption(captionId) {
+  try {
+    const response = await youtube.captions.download({
+      id: captionId,
+      auth: oauth2Client,
+      // Es posible que necesites otros parámetros, como "tfmt" para el formato
+      // Por ejemplo: tfmt: 'srt' o tfmt: 'vtt'
+    }, {
+      responseType: 'text', // Cambia esto según lo que necesites
+    });
+    
+    console.log(response.data); // Aquí estará el contenido de la transcripción
+  } catch (error) {
+    console.error('Error downloading caption:', error);
+  }
+}
+
+// Usa la función
+const captionId = 'AUieDaZyNdflyWxXl1c99eDNn3G_GAFZeZOueyXEV1onT8R_-w'; // Reemplaza con el ID de la transcripción
+//const apiKey = 'AIzaSyAKoyq-rEspbjjGl_LE4yAHsrMNmahrvZs'; // Reemplaza con tu clave de API
+downloadCaption(captionId);
+
+
+/*function uploadVideo(auth) {
   var service = google.youtube('v3');
   service.videos.insert({
     auth: auth,
@@ -96,4 +122,4 @@ function uploadVideo(auth) {
     }
     console.log('Video subido con éxito. ID del video: ' + response.data.id);
   });
-}
+}*/
